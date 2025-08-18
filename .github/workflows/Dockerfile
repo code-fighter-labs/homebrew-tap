@@ -1,21 +1,21 @@
 # Dockerfile
-FROM alpine:latest
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
+WORKDIR /app
 
-# Install any runtime dependencies
-RUN apk add --no-cache ca-certificates
+# Copy the published output
+COPY dist/linux-x64/migratrix-agent .
+
+# Make executable
+RUN chmod +x migratrix-agent
 
 # Create non-root user
-RUN adduser -D -s /bin/sh agent
-
-# Copy the binary (built in GitHub Actions)
-COPY migratrix /usr/local/bin/migratrix
-RUN chmod +x /usr/local/bin/migratrix
+RUN adduser -D -s /bin/sh agent && chown agent:agent migratrix-agent
 
 # Switch to non-root user
 USER agent
 
 # Set entrypoint
-ENTRYPOINT ["migratrix"]
+ENTRYPOINT ["./migratrix-agent"]
 
 # Default command (can be overridden)
 CMD ["--help"]
