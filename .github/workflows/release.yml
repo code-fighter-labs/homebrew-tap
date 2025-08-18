@@ -144,7 +144,7 @@ jobs:
           
           ### Docker:
           ```bash
-          docker run --rm migratrix/migratrix:${{ github.ref_name }}
+          docker run --rm ghcr.io/migratrix/migratrix:${{ github.ref_name }}
           ```
           
           ### Manual Download:
