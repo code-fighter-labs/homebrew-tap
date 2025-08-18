@@ -1,0 +1,153 @@
+# .github/workflows/release.yml
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on version tags like v1.0.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: darwin
+            arch: amd64
+            ext: ""
+          - os: darwin
+            arch: arm64
+            ext: ""
+          - os: linux
+            arch: amd64
+            ext: ""
+          - os: linux
+            arch: arm64
+            ext: ""
+          - os: windows
+            arch: amd64
+            ext: ".exe"
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Build binary
+      env:
+        GOOS: ${{ matrix.os }}
+        GOARCH: ${{ matrix.arch }}
+      run: |
+        go build -o migratrix${{ matrix.ext }} .
+        
+        # Create archive for non-Windows
+        if [ "${{ matrix.os }}" != "windows" ]; then
+          tar -czf migratrix-${{ matrix.os }}-${{ matrix.arch }}.tar.gz migratrix${{ matrix.ext }}
+        else
+          zip migratrix-${{ matrix.os }}-${{ matrix.arch }}.zip migratrix${{ matrix.ext }}
+        fi
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: migratrix-${{ matrix.os }}-${{ matrix.arch }}
+        path: |
+          migratrix-${{ matrix.os }}-${{ matrix.arch }}.tar.gz
+          migratrix-${{ matrix.os }}-${{ matrix.arch }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+
+    - name: Create install script
+      run: |
+        cat > install.sh << 'EOF'
+        #!/bin/bash
+        set -e
+        
+        # Detect OS and architecture
+        OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+        ARCH=$(uname -m)
+        
+        case $ARCH in
+          x86_64) ARCH="amd64" ;;
+          arm64|aarch64) ARCH="arm64" ;;
+          *) echo "Unsupported architecture: $ARCH" >&2; exit 1 ;;
+        esac
+        
+        # Get latest release
+        REPO="migratrix/migratrix"
+        VERSION=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | cut -d'"' -f4)
+        
+        echo "Installing Migratrix $VERSION for $OS-$ARCH..."
+        
+        # Download and install
+        if [ "$OS" = "windows" ]; then
+          URL="https://github.com/$REPO/releases/download/$VERSION/migratrix-$OS-$ARCH.zip"
+          curl -L "$URL" -o migratrix.zip
+          unzip migratrix.zip
+          chmod +x migratrix.exe
+          echo "Downloaded migratrix.exe"
+        else
+          URL="https://github.com/$REPO/releases/download/$VERSION/migratrix-$OS-$ARCH.tar.gz"
+          curl -L "$URL" -o migratrix.tar.gz
+          tar -xzf migratrix.tar.gz
+          chmod +x migratrix
+          
+          # Try to install to PATH
+          if [ -w "/usr/local/bin" ]; then
+            mv migratrix /usr/local/bin/
+            echo "Installed to /usr/local/bin/migratrix"
+          else
+            echo "Please move 'migratrix' to a directory in your PATH"
+          fi
+        fi
+        
+        echo "Installation complete! Try: migratrix --help"
+        EOF
+        chmod +x install.sh
+
+    - name: Generate checksums
+      run: |
+        find . -name "*.tar.gz" -o -name "*.zip" | xargs sha256sum > checksums.txt
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          */migratrix-*.tar.gz
+          */migratrix-*.zip
+          install.sh
+          checksums.txt
+        generate_release_notes: true
+        body: |
+          ## Installation
+          
+          ### One-liner install (macOS/Linux):
+          ```bash
+          curl -sSL https://get.migratrix.com | sh
+          ```
+          
+          ### Homebrew (macOS/Linux):
+          ```bash
+          brew tap migratrix/tap
+          brew install migratrix
+          ```
+          
+          ### Docker:
+          ```bash
+          docker run --rm migratrix/migratrix:${{ github.ref_name }}
+          ```
+          
+          ### Manual Download:
+          Download the appropriate binary for your platform below.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
