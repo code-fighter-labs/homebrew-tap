@@ -7,10 +7,10 @@ class MigratrixAgent < Formula
   on_macos do
     if Hardware::CPU.arm?
       url "https://github.com/code-fighter-labs/migratrix/releases/download/agent-v#{version}/migratrix-agent-darwin-arm64.tar.gz"
-      sha256 "REPLACE_WITH_ARM64_SHA256"  # Get from checksums.txt in release
+      sha256 "REPLACE_WITH_ARM64_SHA256"
     else
       url "https://github.com/code-fighter-labs/migratrix/releases/download/agent-v#{version}/migratrix-agent-darwin-amd64.tar.gz"
-      sha256 "REPLACE_WITH_AMD64_SHA256"  # Get from checksums.txt in release
+      sha256 "REPLACE_WITH_AMD64_SHA256"
     end
   end
 
