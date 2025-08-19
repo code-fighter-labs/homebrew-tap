@@ -1,25 +1,25 @@
 class MigratrixAgent < Formula
   desc "Database migration and data transformation agent"
   homepage "https://migratrix.com"
-  version "1.0.4"
+  version "1.0.5"
   
   on_macos do
     if Hardware::CPU.arm?
       url "https://github.com/code-fighter-labs/migratrix/releases/download/agent-v#{version}/migratrix-agent-darwin-arm64.tar.gz"
-      sha256 "9aad820f0369448c101129cade6448d53d145bd74433dd5eb6b5c160c61e678c"
+      sha256 "13bb30769f6b01419fc713faeac89628bf462323e9512e0865137b7191d4109b"
     else
       url "https://github.com/code-fighter-labs/migratrix/releases/download/agent-v#{version}/migratrix-agent-darwin-amd64.tar.gz"
-      sha256 "fe6eba22cca135589321603b7b4f77c6ef8710072087c04e036da81f5449cfca"
+      sha256 "aa2ca7c421f1e5a4498eae1968ea200e5b2ac535c4e0b81e717f4bb41fb07cbc"
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
       url "https://github.com/code-fighter-labs/migratrix/releases/download/agent-v#{version}/migratrix-agent-linux-arm64.tar.gz"
-      sha256 "209692fde264b5244731fac9d4b735f60cc7e47fc44f0c3565962c7f28e8780d"
+      sha256 "1eb1441bf9ffe4eaf33c78e157a4097b90ed6024e4db5dcc1677b82a092919bb"
     else
       url "https://github.com/code-fighter-labs/migratrix/releases/download/agent-v#{version}/migratrix-agent-linux-amd64.tar.gz"
-      sha256 "474ab98ecddaa77c041d006428b513e5a191bcf06f60cd4f659141ba299c87cb"
+      sha256 "0eff456c84cb5bdd445b4b3e548b548598c35b3aefdbdf61bf2711c1a16d6156"
     end
   end
 
