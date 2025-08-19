@@ -1,9 +1,8 @@
-# Formula/migratrix-agent.rb
 class MigratrixAgent < Formula
   desc "Database migration and data transformation agent"
   homepage "https://migratrix.com"
-  version "1.0.0"  # Update this with each release
-  
+  version "1.0.0"
+
   on_macos do
     if Hardware::CPU.arm?
       url "https://github.com/code-fighter-labs/migratrix/releases/download/agent-v#{version}/migratrix-agent-darwin-arm64.tar.gz"
