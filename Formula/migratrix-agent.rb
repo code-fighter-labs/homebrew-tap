@@ -5,22 +5,26 @@ class MigratrixAgent < Formula
   
   on_macos do
     on_intel do
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/1.0.41/migratrix-agent-darwin-amd64.tar.gz"
       sha256 "172b003a1839ab756bfc68f8ee9660d4ea8cd62202a201ba36970600b02dca2b"
     end
     on_arm do
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/1.0.41/migratrix-agent-darwin-arm64.tar.gz"
       sha256 "4898c147798c5f2eef2ae2cfb4444ff98bdd7dd61883c37e2e292deab8afbe4f"
     end
   end
-
+  
   on_linux do
     on_intel do
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/1.0.41/migratrix-agent-linux-amd64.tar.gz"
       sha256 "72318f14e450ba7cb61c52067010f93eaaafce2c2982f562ba60121e349be9dc"
     end
     on_arm do
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/1.0.41/migratrix-agent-linux-arm64.tar.gz"
       sha256 "250659df6e2cd4de474cbd809686913a6eaac89d1e28588582d75359be386ba7"
     end
   end
-
+  
   def install
     if OS.mac?
       # For macOS multi-file deployment
@@ -40,7 +44,7 @@ class MigratrixAgent < Formula
       bin.install "migratrix-agent"
     end
   end
-
+  
   test do
     system "#{bin}/migratrix-agent", "--version"
   end
