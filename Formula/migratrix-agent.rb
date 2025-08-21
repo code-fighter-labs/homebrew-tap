@@ -1,7 +1,7 @@
 class MigratrixAgent < Formula
   desc "Database migration and data transformation agent"
   homepage "https://migratrix.com"
-  version "1.0.38"
+  version "1.0.39"
   
   on_macos do
     on_intel do
