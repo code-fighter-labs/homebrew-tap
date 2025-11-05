@@ -1,27 +1,27 @@
 class MigratrixAgent < Formula
   desc "Database migration and data transformation agent"
   homepage "https://migratrix.com"
-  version "2.0.9"
+  version "2.0.10"
   
   on_macos do
     on_intel do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/2.0.9/migratrix-agent-darwin-amd64.tar.gz"
-      sha256 "e8b1a1cad92d419ac14b912ebcda896e7c45cb2614a53b1fecec6166053846ff"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/2.0.10/migratrix-agent-darwin-amd64.tar.gz"
+      sha256 "6688332cf5b6a7e6c7ab5816072f8e6f916fdfda3564e3eb0fc59682af56bcc9"
     end
     on_arm do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/2.0.9/migratrix-agent-darwin-arm64.tar.gz"
-      sha256 "3a3db5a1c175cc7d533019b7478ff89e5c1d2444c8185deddc552927679cb29a"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/2.0.10/migratrix-agent-darwin-arm64.tar.gz"
+      sha256 "246d97422f0d275a4d506f79d096eee479c29a45da26cc73bfbacec2f11a3b21"
     end
   end
   
   on_linux do
     on_intel do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/2.0.9/migratrix-agent-linux-amd64.tar.gz"
-      sha256 "2f745012d59d3c8a4665cab5166e10677772b7edbc88919e3720c39dbe5953e3"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/2.0.10/migratrix-agent-linux-amd64.tar.gz"
+      sha256 "16715706c54259321d1a70c398e4885c69d916498b683a2964d11e0b57fcfc51"
     end
     on_arm do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/2.0.9/migratrix-agent-linux-arm64.tar.gz"
-      sha256 "2c158e09905c0a3cb62d96c387e785c6381252fa0430e0ce01f6e9bf447356b7"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/2.0.10/migratrix-agent-linux-arm64.tar.gz"
+      sha256 "c2eb5089027f0f5661e467c9c9fc1fce99d432e9c60fb715c1f68c43a2e8e383"
     end
   end
   
