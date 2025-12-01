@@ -1,27 +1,27 @@
 class MigratrixAgent < Formula
   desc "Database migration and data transformation agent"
   homepage "https://migratrix.com"
-  version "3.0.01"
+  version "3.0.02"
   
   on_macos do
     on_intel do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/3.0.01/migratrix-agent-darwin-amd64.tar.gz"
-      sha256 "b736c05b01f84ea1a80657d43bd090d09af6f8dde7165fbdb65a7c5d19f936d0"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/3.0.02/migratrix-agent-darwin-amd64.tar.gz"
+      sha256 "1ff6597282340cceb8bdb0f3d71012924a3004a03a25f6b1e56f13e0add2dc88"
     end
     on_arm do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/3.0.01/migratrix-agent-darwin-arm64.tar.gz"
-      sha256 "31e41a83406f4a840ce290b8f2d98eea70d2875fc265b5091de851dee046b392"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/3.0.02/migratrix-agent-darwin-arm64.tar.gz"
+      sha256 "52f767cc75f4e9d0f54ba1104596e6a04d2058c744e88baa7fdfceff71a297d0"
     end
   end
   
   on_linux do
     on_intel do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/3.0.01/migratrix-agent-linux-amd64.tar.gz"
-      sha256 "4f4f70635b9fda6901bf58984930093f9317554c845a7a9b625b9eb22801231b"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/3.0.02/migratrix-agent-linux-amd64.tar.gz"
+      sha256 "65be0be66f1fc0bb844240e6e3d8dbd7ef52f22d069b08ced94d7d9d21f84a1d"
     end
     on_arm do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/3.0.01/migratrix-agent-linux-arm64.tar.gz"
-      sha256 "bdc666ea90c532359bf5599c34aa333b3f09d450d4afa4218d333ab26f249a26"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/3.0.02/migratrix-agent-linux-arm64.tar.gz"
+      sha256 "9b9df278746fb5fdd6439d009fd8c48e0ce5375f8ebdd9116b079e2782da6f7f"
     end
   end
   
@@ -34,7 +34,7 @@ class MigratrixAgent < Formula
       # Create a wrapper script in bin that calls the actual executable
       (bin/"migratrix-agent").write <<~EOS
         #!/bin/bash
-        exec "#{libexec}/Migratrix.Api.Agent" "$@"
+        exec "#{libexec}/migratrix-agent" "$@"
       EOS
       
       # Make the wrapper executable
