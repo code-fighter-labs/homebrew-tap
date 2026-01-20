@@ -1,27 +1,27 @@
 class MigratrixAgent < Formula
   desc "Database migration and data transformation agent"
   homepage "https://migratrix.com"
-  version "0.0.1"
+  version "0.0.2"
   
   on_macos do
     on_intel do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.1/migratrix-agent-darwin-amd64.tar.gz"
-      sha256 "3925714c70bd3f224ba85e3ad730676a4986e9585c0fbee1ca1fbf8aeec61bfa"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.2/migratrix-agent-darwin-amd64.tar.gz"
+      sha256 "8bd34708f87940cb9f21035b38eb836d18084ad1e9181e62831f50754c6a89c1"
     end
     on_arm do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.1/migratrix-agent-darwin-arm64.tar.gz"
-      sha256 "ad998e2eb7835e47889f098882331ed17ebabdc9fb8c166ff72bc72a48908779"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.2/migratrix-agent-darwin-arm64.tar.gz"
+      sha256 "ba4627aa40e5cb6a4ff21c4908d239ea40e2fbb5ca4f37f6ea1d238718dc258b"
     end
   end
   
   on_linux do
     on_intel do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.1/migratrix-agent-linux-amd64.tar.gz"
-      sha256 "00d470f21fea6341b2ed55c1a9d95a89e25c8c89ecf5c3646c98ddf25916cca8"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.2/migratrix-agent-linux-amd64.tar.gz"
+      sha256 "955ed0e7e572cb07248637255e36e84cc6e402e9991b2f088dcfbc9ffcfcc707"
     end
     on_arm do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.1/migratrix-agent-linux-arm64.tar.gz"
-      sha256 "934117a8a800b0171ac032f240dd88857a2a3f936bb40ed7969bc29f2ac7f365"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.2/migratrix-agent-linux-arm64.tar.gz"
+      sha256 "700e7de35e8b55aea13d9ac3be0db473704eddc3f827991911d4d8c5d5ea2bfe"
     end
   end
   
@@ -49,3 +49,9 @@ class MigratrixAgent < Formula
     system "#{bin}/migratrix-agent", "--version"
   end
 end
+
+  def post_install
+    if File.exist?("#{libexec}/Migratrix.Api.Agent") && !File.exist?("#{libexec}/migratrix-agent")
+      system "mv", "#{libexec}/Migratrix.Api.Agent", "#{libexec}/migratrix-agent"
+    end
+  end
