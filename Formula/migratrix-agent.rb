@@ -1,27 +1,27 @@
 class MigratrixAgent < Formula
   desc "Database migration and data transformation agent"
   homepage "https://migratrix.com"
-  version "0.0.2"
+  version "0.0.3"
   
   on_macos do
     on_intel do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.2/migratrix-agent-darwin-amd64.tar.gz"
-      sha256 "8bd34708f87940cb9f21035b38eb836d18084ad1e9181e62831f50754c6a89c1"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.3/migratrix-agent-darwin-amd64.tar.gz"
+      sha256 "a6ab47fa003b1cc7ee3088138267365c18810afe249af5666fca5d72a2b6b547"
     end
     on_arm do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.2/migratrix-agent-darwin-arm64.tar.gz"
-      sha256 "ba4627aa40e5cb6a4ff21c4908d239ea40e2fbb5ca4f37f6ea1d238718dc258b"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.3/migratrix-agent-darwin-arm64.tar.gz"
+      sha256 "de36017e0330b091395ce1df70eb56f12e1eac59292e8c2da7caeb544d19f730"
     end
   end
   
   on_linux do
     on_intel do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.2/migratrix-agent-linux-amd64.tar.gz"
-      sha256 "955ed0e7e572cb07248637255e36e84cc6e402e9991b2f088dcfbc9ffcfcc707"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.3/migratrix-agent-linux-amd64.tar.gz"
+      sha256 "a5d3d09ac1e000c7dd00c7eb5f2cb45c0f97b3ad1821e0df26e1292ceb6f5f89"
     end
     on_arm do
-      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.2/migratrix-agent-linux-arm64.tar.gz"
-      sha256 "700e7de35e8b55aea13d9ac3be0db473704eddc3f827991911d4d8c5d5ea2bfe"
+      url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/0.0.3/migratrix-agent-linux-arm64.tar.gz"
+      sha256 "1c10d7cd16bda26281878bfa3a2b103fd31a0f29ce934022a6f6d39f96397312"
     end
   end
   
@@ -51,7 +51,7 @@ class MigratrixAgent < Formula
 end
 
   def post_install
-    if File.exist?("#{libexec}/Migratrix.Api.Agent") && !File.exist?("#{libexec}/migratrix-agent")
-      system "mv", "#{libexec}/Migratrix.Api.Agent", "#{libexec}/migratrix-agent"
+    if File.exist?("#{libexec}/migratrix-agent") && !File.exist?("#{libexec}/migratrix-agent")
+      system "mv", "#{libexec}/migratrix-agent", "#{libexec}/migratrix-agent"
     end
   end
