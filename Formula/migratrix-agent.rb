@@ -6,29 +6,30 @@ class MigratrixAgent < Formula
   on_macos do
     on_intel do
       url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/1.4.3/migratrix-agent-darwin-amd64.tar.gz"
-      sha256 "bca4b2051b5f8ff507d0fc09ca796cd9598d101b9e9218fca41a288aaa20c93e"
+      sha256 "REPLACE_WITH_DARWIN_AMD64_SHA256"
     end
     on_arm do
       url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/1.4.3/migratrix-agent-darwin-arm64.tar.gz"
-      sha256 "047cb5ed9232a4a7bc990fbcd1fabbf9722478927bf6f476003ad13cdb04fce3"
+      sha256 "REPLACE_WITH_DARWIN_ARM64_SHA256"
     end
   end
 
   on_linux do
     on_intel do
       url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/1.4.3/migratrix-agent-linux-amd64.tar.gz"
-      sha256 "fb2290812dfe54e06e23b7e68965006a88156f8956ce50d107542b139530eec7"
+      sha256 "REPLACE_WITH_LINUX_AMD64_SHA256"
     end
     on_arm do
       url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/1.4.3/migratrix-agent-linux-arm64.tar.gz"
-      sha256 "4b8ec4a2ea1c963a1c9792b3e8c1e152f6c37e1d5089aaa210107b7fb7cd4f49"
+      sha256 "REPLACE_WITH_LINUX_ARM64_SHA256"
     end
   end
 
   def install
     if OS.mac?
-      # macOS multi-file deployment: keep the .NET framework-dependent layout
-      # together in libexec, expose a thin shim in bin.
+      # macOS: framework-dependent .NET layout. Keep the binary plus all its
+      # DLLs together in libexec, expose a thin wrapper in bin so users (and
+      # the launchd plist) have a single stable path.
       libexec.install Dir["*"]
 
       (bin/"migratrix-agent").write <<~EOS
@@ -37,19 +38,30 @@ class MigratrixAgent < Formula
       EOS
       chmod 0755, bin/"migratrix-agent"
     else
-      # Linux: single-file self-contained binary
+      # Linux: self-contained single-file binary.
       bin.install "migratrix-agent"
     end
   end
 
   # Runs after `brew install` AND `brew upgrade`. Refreshes the launchd-managed
-  # copy of the agent under ~/Applications/Migratrix so the service actually
-  # runs the new version. Without this, brew updates the cellar but launchd
-  # keeps re-launching the stale binary in the user's home dir.
+  # copy under ~/Applications/Migratrix so the service actually runs the new
+  # version. Without this, brew updates the cellar but launchd keeps
+  # re-launching the stale binary in the user's home dir.
+  #
+  # Two practical gotchas this block has to work around:
+  #
+  #   1. Homebrew's post_install runs inside a sandbox that BLOCKS writes
+  #      to most $HOME paths. .NET's single-file host tries to extract its
+  #      bundled native libraries to ~/.net/... and fails. We fix that by
+  #      pointing DOTNET_BUNDLE_EXTRACT_BASE_DIR at the formula's var/ dir,
+  #      which the sandbox permits.
+  #
+  #   2. Even with the env var, the sandbox may still deny writes to
+  #      ~/Applications/Migratrix and launchctl operations against the
+  #      user's LaunchAgent. If the embedded `migratrix-agent upgrade`
+  #      call fails for any reason, we fall through and let the user run
+  #      it themselves — see the `caveats` block below.
   def post_install
-    # Find the user actually running brew. When brew is invoked via sudo this
-    # is non-trivial — but for `brew upgrade` (the common case) ENV["HOME"]
-    # points at the right user.
     home = ENV["HOME"]
     return if home.nil? || home.empty?
 
@@ -57,29 +69,40 @@ class MigratrixAgent < Formula
     install_dir = "#{home}/Applications/Migratrix"
 
     # Only do anything if the user has actually installed the agent as a
-    # service on this machine. Plain `brew install migratrix-agent` (no
-    # subsequent `migratrix-agent --apiKey ...`) leaves no plist and we
-    # should not synthesize one.
+    # service on this machine. A plain `brew install` (no subsequent
+    # `migratrix-agent --apiKey ...`) leaves no plist; we should not
+    # synthesize one or copy files into a path the user never asked for.
     return unless File.exist?(plist)
 
-    # Preferred path: ask the new binary to upgrade itself. The 1.4.2+ agent
-    # knows the `upgrade` command — it stops the service, recopies itself
-    # into install_dir, and restarts. If it succeeds we're done.
-    if system "#{bin}/migratrix-agent", "upgrade"
-      return
-    end
+    # Give .NET a sandbox-allowed extraction directory.
+    extract_dir = "#{var}/migratrix-agent/dotnet-extract"
+    mkdir_p extract_dir
 
-    # Fallback: the running agent is older than 1.4.2 (i.e. doesn't know
-    # `upgrade`). Do the copy + restart manually so users upgrading FROM
-    # pre-1.4.2 still get a working post_install.
+    # Preferred path: ask the new binary to upgrade itself. The 1.4.2+ agent
+    # implements the `upgrade` command — it stops the service, recopies
+    # itself into install_dir, and restarts. If it succeeds we're done.
+    upgraded = false
+    with_env(
+      DOTNET_BUNDLE_EXTRACT_BASE_DIR: extract_dir,
+      DOTNET_NOLOGO: "1",
+    ) do
+      upgraded = system "#{bin}/migratrix-agent", "upgrade"
+    end
+    return if upgraded
+
+    # Fallback: the running agent is older than 1.4.2 (no `upgrade` cmd) or
+    # the call above hit a sandbox restriction. Try the file-shuffle from
+    # Ruby. If the sandbox blocks these too, brew will print the error and
+    # the caveats block will tell the user how to recover manually.
     return unless File.directory?(install_dir)
 
     system "launchctl", "unload", plist
     if OS.mac?
-      # macOS uses framework-dependent deployment — copy the whole libexec
+      # macOS uses framework-dependent deployment — copy the WHOLE libexec
       # tree on top of install_dir, not just the bin shim. Otherwise the
-      # service starts a wrapper that points back into the cellar (which
-      # changes path on every release).
+      # service would launch a wrapper that points back into the cellar
+      # (whose path changes on every release; the next brew cleanup breaks
+      # the install).
       system "rsync", "-a", "--delete", "#{libexec}/", "#{install_dir}/"
       chmod 0755, "#{install_dir}/migratrix-agent"
     else
@@ -87,6 +110,22 @@ class MigratrixAgent < Formula
       chmod 0755, "#{install_dir}/migratrix-agent"
     end
     system "launchctl", "load", plist
+  end
+
+  def caveats
+    <<~EOS
+      First-time setup:
+        migratrix-agent --apiKey YOUR_API_KEY
+
+      If a future `brew upgrade` reports that post_install failed (Homebrew's
+      sandbox sometimes blocks writes into your home directory), refresh the
+      installed agent yourself:
+        migratrix-agent upgrade
+
+      That will stop the service, copy the new binary into
+        ~/Applications/Migratrix
+      and restart launchd's com.migratrix.agent.
+    EOS
   end
 
   test do
