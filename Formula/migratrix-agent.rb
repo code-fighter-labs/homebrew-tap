@@ -42,24 +42,18 @@ class MigratrixAgent < Formula
     return unless OS.mac?
 
     label = "com.migratrix.agent"
-    service_target = "gui/#{Process.uid}/#{label}"
+    service_target = [
+      "gui/#{Process.uid}/#{label}",
+      "user/#{Process.uid}/#{label}",
+    ].find { |target| quiet_system "launchctl", "print", target }
 
-    unless quiet_system "launchctl", "print", service_target
+    unless service_target
       ohai "#{label} is not loaded — run `migratrix-agent --apiKey YOUR_KEY` to set it up."
       return
     end
 
-    # Use `kill SIGTERM` rather than `kickstart -k` here. Homebrew calls
-    # post_install before relinking bin/ to the new keg, so kickstart -k
-    # would immediately relaunch the old binary. SIGTERM lets launchd respawn
-    # after its default 10-second ThrottleInterval, by which time Homebrew has
-    # finished relinking and $(brew --prefix)/bin/migratrix-agent resolves to
-    # the new binary. Note: `launchctl stop` only accepts a bare label (legacy
-    # API) and silently fails when given a service-target like gui/UID/label.
-    if quiet_system "launchctl", "kill", "SIGTERM", service_target
-      ohai "#{label} will restart with the new binary in ~10 seconds."
-    elsif quiet_system "launchctl", "kickstart", service_target
-      ohai "Started #{label}."
+    if quiet_system "launchctl", "kickstart", "-k", service_target
+      ohai "Restarted #{label} — service is now running the new binary."
     else
       opoo "Could not restart #{label}. Run manually:"
       opoo "  launchctl kickstart -k #{service_target}"
