@@ -6,22 +6,22 @@ class MigratrixAgent < Formula
   on_macos do
     on_intel do
       url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/1.4.9/migratrix-agent-darwin-amd64.tar.gz"
-      sha256 "REPLACE_WITH_DARWIN_AMD64_SHA256"
+      sha256 "e43c868bb858d75891084326090f7ff724c435ebba9907664e0b63ff353dab47"
     end
     on_arm do
       url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/1.4.9/migratrix-agent-darwin-arm64.tar.gz"
-      sha256 "REPLACE_WITH_DARWIN_ARM64_SHA256"
+      sha256 "4fe8b6f9dc7248e2e5bb731ab115736f452fd27b2935c5a0061f905a0073e8be"
     end
   end
 
   on_linux do
     on_intel do
       url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/1.4.9/migratrix-agent-linux-amd64.tar.gz"
-      sha256 "REPLACE_WITH_LINUX_AMD64_SHA256"
+      sha256 "8a52ce6f9cd66407f4b38e0ea15a33219ee193498138c1f9278ea834a7391822"
     end
     on_arm do
       url "https://github.com/code-fighter-labs/homebrew-tap/releases/download/1.4.9/migratrix-agent-linux-arm64.tar.gz"
-      sha256 "REPLACE_WITH_LINUX_ARM64_SHA256"
+      sha256 "70fce20f7f1b5da7d1a4b31d3966ac1667c36f0796eca0e7b3c441a9fc5d20a4"
     end
   end
 
