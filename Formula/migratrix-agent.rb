@@ -49,15 +49,19 @@ class MigratrixAgent < Formula
       return
     end
 
-    # We intentionally *stop* rather than kickstart here. Homebrew calls
+    # Use `kill SIGTERM` rather than `kickstart -k` here. Homebrew calls
     # post_install before relinking bin/ to the new keg, so kickstart -k
-    # would relaunch the old binary. Stopping lets launchd respawn the
-    # service after Homebrew finishes the relink, at which point
-    # $(brew --prefix)/bin/migratrix-agent already resolves to the new binary.
-    if quiet_system "launchctl", "stop", service_target
-      ohai "Stopped #{label} — launchd will respawn it from the new binary."
+    # would immediately relaunch the old binary. SIGTERM lets launchd respawn
+    # after its default 10-second ThrottleInterval, by which time Homebrew has
+    # finished relinking and $(brew --prefix)/bin/migratrix-agent resolves to
+    # the new binary. Note: `launchctl stop` only accepts a bare label (legacy
+    # API) and silently fails when given a service-target like gui/UID/label.
+    if quiet_system "launchctl", "kill", "SIGTERM", service_target
+      ohai "#{label} will restart with the new binary in ~10 seconds."
+    elsif quiet_system "launchctl", "kickstart", service_target
+      ohai "Started #{label}."
     else
-      opoo "Could not stop #{label}. Restart manually with:"
+      opoo "Could not restart #{label}. Run manually:"
       opoo "  launchctl kickstart -k #{service_target}"
     end
   end
