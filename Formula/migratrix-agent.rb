@@ -39,34 +39,35 @@ class MigratrixAgent < Formula
     end
   end
 
-  # After brew finishes the cellar swap, kick the running launchd service so
-  # it respawns from the new binary. `launchctl kickstart` is a launchd RPC
-  # (no file writes), which brew's post_install sandbox permits.
-  #
-  # Pre-condition: the user previously ran `migratrix-agent --apiKey ...`
-  # AND `migratrix-agent upgrade` once, so a launchd plist exists and points
-  # at /opt/homebrew/bin/migratrix-agent. We no-op if either is missing.
-  def post_install
-    return unless OS.mac?
+def post_install
+  return unless OS.mac?
 
-    label = "com.migratrix.agent"
-    service_target = "gui/#{Process.uid}/#{label}"
+  label = "com.migratrix.agent"
+  service_target = "gui/#{Process.uid}/#{label}"
 
-    # Use brew's quiet_system rather than `system(... out:, err:)` — the
-    # kwargs form does NOT pass through brew's `system` wrapper and ends up
-    # appended to the command as literal args, which broke the check in
-    # 1.4.8.
-    unless quiet_system "launchctl", "print", service_target
-      ohai "migratrix-agent service not loaded; run `migratrix-agent --apiKey ...` to install it."
-      return
-    end
-
-    if system "launchctl", "kickstart", "-k", service_target
-      ohai "Restarted #{label} — service is now running the new binary."
-    else
-      opoo "Could not kickstart #{label}. Run `launchctl kickstart -k #{service_target}` manually."
-    end
+  unless quiet_system "launchctl", "print", service_target
+    ohai "migratrix-agent service not loaded; run `migratrix-agent --apiKey ...` to install it."
+    return
   end
+
+  require "open3"
+  out, status = Open3.capture2e("launchctl", "kickstart", "-k", service_target)
+
+  if status.success?
+    ohai "Restarted #{label} — service is now running the new binary."
+    return
+  end
+
+  opoo "launchctl kickstart failed (exit #{status.exitstatus}): #{out.strip}"
+
+  if quiet_system "pkill", "-TERM", "-u", Process.uid.to_s, "-f", "/Cellar/migratrix-agent/"
+    ohai "Sent SIGTERM to old migratrix-agent — launchd is respawning from the new binary."
+    return
+  end
+
+  opoo "Could not auto-restart #{label}. Run manually:"
+  opoo "  launchctl kickstart -k #{service_target}"
+end
 
   def caveats
     <<~EOS
