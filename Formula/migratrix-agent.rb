@@ -28,7 +28,6 @@ class MigratrixAgent < Formula
   def install
     if OS.mac?
       libexec.install Dir["*"]
-
       (bin/"migratrix-agent").write <<~EOS
         #!/bin/bash
         exec "#{libexec}/migratrix-agent" "$@"
@@ -39,51 +38,44 @@ class MigratrixAgent < Formula
     end
   end
 
-def post_install
-  return unless OS.mac?
+  def post_install
+    return unless OS.mac?
 
-  label = "com.migratrix.agent"
-  service_target = "gui/#{Process.uid}/#{label}"
+    label = "com.migratrix.agent"
+    service_target = "gui/#{Process.uid}/#{label}"
 
-  unless quiet_system "launchctl", "print", service_target
-    ohai "migratrix-agent service not loaded; run `migratrix-agent --apiKey ...` to install it."
-    return
+    unless quiet_system "launchctl", "print", service_target
+      ohai "#{label} is not loaded — run `migratrix-agent --apiKey YOUR_KEY` to set it up."
+      return
+    end
+
+    # We intentionally *stop* rather than kickstart here. Homebrew calls
+    # post_install before relinking bin/ to the new keg, so kickstart -k
+    # would relaunch the old binary. Stopping lets launchd respawn the
+    # service after Homebrew finishes the relink, at which point
+    # $(brew --prefix)/bin/migratrix-agent already resolves to the new binary.
+    if quiet_system "launchctl", "stop", service_target
+      ohai "Stopped #{label} — launchd will respawn it from the new binary."
+    else
+      opoo "Could not stop #{label}. Restart manually with:"
+      opoo "  launchctl kickstart -k #{service_target}"
+    end
   end
-
-  require "open3"
-  out, status = Open3.capture2e("launchctl", "kickstart", "-k", service_target)
-
-  if status.success?
-    ohai "Restarted #{label} — service is now running the new binary."
-    return
-  end
-
-  opoo "launchctl kickstart failed (exit #{status.exitstatus}): #{out.strip}"
-
-  if quiet_system "pkill", "-TERM", "-u", Process.uid.to_s, "-f", "/Cellar/migratrix-agent/"
-    ohai "Sent SIGTERM to old migratrix-agent — launchd is respawning from the new binary."
-    return
-  end
-
-  opoo "Could not auto-restart #{label}. Run manually:"
-  opoo "  launchctl kickstart -k #{service_target}"
-end
 
   def caveats
     <<~EOS
       First-time setup:
         migratrix-agent --apiKey YOUR_API_KEY
 
-      Subsequent upgrades:
+      Subsequent upgrades are handled automatically:
         brew upgrade migratrix-agent
-      The service auto-restarts as part of the upgrade.
 
-      (One-time only, if upgrading from pre-1.4.5: run `migratrix-agent
-      upgrade` once to migrate your launchd plist to the brew bin path.)
+      (One-time only, if upgrading from pre-1.4.5: run `migratrix-agent upgrade`
+      once to migrate your launchd plist to the stable brew bin path.)
     EOS
   end
 
   test do
-    system "#{bin}/migratrix-agent", "--version"
+    system bin/"migratrix-agent", "--version"
   end
 end
