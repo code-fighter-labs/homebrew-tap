@@ -2,6 +2,7 @@ class MigratrixAgent < Formula
   desc "Database migration and data transformation agent"
   homepage "https://migratrix.com"
   version "1.5.3"
+  revision 1
 
   on_macos do
     on_intel do
@@ -30,6 +31,8 @@ class MigratrixAgent < Formula
       libexec.install Dir["*"]
       (bin/"migratrix-agent").write <<~EOS
         #!/bin/bash
+        export DOTNET_BUNDLE_EXTRACT_BASE_DIR="${HOME}/Library/Caches/Migratrix/Agent/dotnet-bundle/#{version}"
+        mkdir -p "${DOTNET_BUNDLE_EXTRACT_BASE_DIR}"
         exec "#{libexec}/migratrix-agent" "$@"
       EOS
       chmod 0755, bin/"migratrix-agent"
